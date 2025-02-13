@@ -33,3 +33,60 @@ opcode_table = {
     'jal':  {'type': 'J', 'opcode': '1101111'}
 }
 
+def initialpass(lines):
+    labels = {}
+    pc = 0
+    for l in lines:
+        l = l.strip()
+        if not l:
+            continue
+        if ':' in l:
+            label,remaining = l.split(':')
+            label=label.strip()
+            remaining=remaining.strip()
+            labels[label] = pc
+            if remaining:
+                pc += 4
+        else:
+            pc += 4
+    return labels
+
+def encode_imm(imm):
+    imm = int(imm)
+    if imm < 0:
+        imm = (1 << 12) + imm
+    imm = f"{imm & 0xFFF:012b}"
+    return imm
+#convert immediate to 12-bit binary
+
+def encode_R(op, rd, rs1, rs2):
+    f7f3op = opcode_table[op]
+    return f"{f7f3op['funct7']}{registers[rs2]}{registers[rs1]}{f7f3op['funct3']}{registers[rd]}{f7f3op['opcode']}"
+
+def encode_I(op, rd, rs1, imm):
+    f3op = opcode_table[op]
+    imm = encode_imm(imm)
+    return f"{imm}{registers[rs1]}{f3op['funct3']}{registers[rd]}{f3op['opcode']}"
+
+def encode_S(op, rs1, rs2, imm):
+    f3op = opcode_table[op]
+    imm = encode_imm(imm)
+    return f"{imm[0:7]}{registers[rs2]}{registers[rs1]}{f3op['funct3']}{imm[7:]}{f3op['opcode']}"
+
+def encode_B(op, rs1, rs2, imm):
+    f3op = opcode_table[op]
+    imm = int(imm)
+    if imm < 0:
+        imm = (1 << 13) + imm
+    imm = f"{imm & 0x1FFF:013b}"
+
+    return f"{imm[0]}{imm[2:8]}{registers[rs2]}{registers[rs1]}{f3op['funct3']}{imm[8:12]}{imm[1]}{f3op['opcode']}"
+
+def encode_J(op, rd, imm):
+    op = opcode_table[op]
+    imm = int(imm)
+    if imm < 0:
+        imm = (1 << 21) + imm
+    imm = f"{imm & 0x1FFFFF:021b}"
+    
+    return f"{imm[0]}{imm[10:20]}{imm[9]}{imm[1:9]}{registers[rd]}{op['opcode']}"
