@@ -32,6 +32,71 @@ opcode_table = {
 
     'jal':  {'type': 'J', 'opcode': '1101111'}
 }
+def error_R(op, rd, rs1, rs2):
+    if op not in opcode_table:
+        print("Wrong instruction")
+        return False
+    if rd not in registers or rs1 not in registers or rs2 not in registers:
+        print("Wrong register")
+        return False
+    return True
+
+def error_I(op, rd, rs1, imm):
+    if op not in opcode_table:
+        print("Wrong instruction")
+        return False
+    if rd not in registers or rs1 not in registers:
+        print("Wrong register")
+        return False
+    try:
+        int(imm)
+    except ValueError:
+        print("Wrong immediate value")
+        return False
+    return True
+
+def error_S(op, rs1, rs2, imm):
+    if op not in opcode_table:
+        print("Wrong instruction")
+        return False
+    if rs1 not in registers or rs2 not in registers:
+        print("Wrong register")
+        return False
+    try:
+        int(imm)
+    except ValueError:
+        print("Wrong immediate value")
+        return False
+    return True
+
+def error_B(op, rs1, rs2, imm):
+    if op not in opcode_table:
+        print("Wrong instruction")
+        return False
+    if rs1 not in registers or rs2 not in registers:
+        print("Wrong register")
+        return False
+    try:
+        int(imm)
+    except ValueError:
+        print("Wrong immediate value")
+        return False
+    return True
+
+def error_J(op, rd, imm):
+    if op not in opcode_table:
+        print("Wrong instruction")
+        return False
+    if rd not in registers:
+        print("Wrong register")
+        return False
+    try:
+        int(imm)
+    except ValueError:
+        print("Wrong immediate value")
+        return False
+    return True
+
 
 def initialpass(lines):
     labels = {}
@@ -60,20 +125,28 @@ def encode_imm(imm):
 #convert immediate to 12-bit binary
 
 def encode_R(op, rd, rs1, rs2):
+    if not(error_R(op,rd,rs1,rs2)):
+        raise ValueError("Wrong Instruction")
     f7f3op = opcode_table[op]
     return f"{f7f3op['funct7']}{registers[rs2]}{registers[rs1]}{f7f3op['funct3']}{registers[rd]}{f7f3op['opcode']}"
 
 def encode_I(op, rd, rs1, imm):
+    if not(error_I(op,rd,rs1,imm)):
+        raise ValueError("Wrong Instruction")
     f3op = opcode_table[op]
     imm = encode_imm(imm)
     return f"{imm}{registers[rs1]}{f3op['funct3']}{registers[rd]}{f3op['opcode']}"
 
 def encode_S(op, rs1, rs2, imm):
+    if not(error_S(op,rs1,rs2,imm)):
+        raise ValueError("Wrong Instruction")
     f3op = opcode_table[op]
     imm = encode_imm(imm)
     return f"{imm[0:7]}{registers[rs2]}{registers[rs1]}{f3op['funct3']}{imm[7:]}{f3op['opcode']}"
 
 def encode_B(op, rs1, rs2, imm):
+    if not(error_B(op,rs1,rs2,imm)):
+        raise ValueError("Wrong Instruction")
     f3op = opcode_table[op]
     imm = int(imm)
     if imm < 0:
@@ -83,6 +156,8 @@ def encode_B(op, rs1, rs2, imm):
     return f"{imm[0]}{imm[2:8]}{registers[rs2]}{registers[rs1]}{f3op['funct3']}{imm[8:12]}{imm[1]}{f3op['opcode']}"
 
 def encode_J(op, rd, imm):
+    if not(error_J(op,rd,imm)):
+        raise ValueError("Wrong Instruction")
     op = opcode_table[op]
     imm = int(imm)
     if imm < 0:
