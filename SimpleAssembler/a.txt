@@ -1,23 +1,9 @@
-addi s1,zero,5
-addi s2,zero,0
-addi s3,zero,1
-addi s4,zero,256
-add s2,s2,s3
-addi s3,s3,1
-add s2,s2,s3
-addi s3,s3,1
-add s2,s2,s3
-addi s3,s3,1
-add s2,s2,s3
-addi s3,s3,1
-add s2,s2,s3
-sw s2,0(s4)
-lw a0,0(s4)
-addi sp,sp,-8
-sw s2,4(sp)
-lw t0,4(sp)
-slt t1,zero,t0
-beq t1,zero,0
-addi sp,sp,8
+addi sp,zero,256
+addi ra,zero,15
+addi sp,zero,10
+loop: beq ra,sp,end
+sub ra,ra,sp
+jal zero,loop
+end: sw ra,0(sp)
 jalr zero,ra,0
 beq zero,zero,0
