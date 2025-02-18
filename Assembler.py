@@ -28,10 +28,10 @@ opcode_table = {
     'beq':  {'type': 'B', 'funct3': '000', 'opcode': '1100011'},
     'bne':  {'type': 'B', 'funct3': '001', 'opcode': '1100011'},
     'blt':  {'type': 'B', 'funct3': '100', 'opcode': '1100011'},
-    'bge':  {'type': 'B', 'funct3': '101', 'opcode': '1100011'},
 
     'jal':  {'type': 'J', 'opcode': '1101111'}
 }
+
 def error_R(op, rd, rs1, rs2):
     if op not in opcode_table:
         print("Wrong instruction")
@@ -165,3 +165,107 @@ def encode_J(op, rd, imm):
     imm = f"{imm & 0x1FFFFF:021b}"
     
     return f"{imm[0]}{imm[10:20]}{imm[9]}{imm[1:9]}{registers[rd]}{op['opcode']}"
+
+with open("a.txt") as f:
+    l=f.readlines()
+    l=[x.strip() for x in l]
+    l=[x for x in l if x]
+    print(l)
+
+print(initialpass(l))
+
+
+def secondpass(lines):
+    labels=initialpass(lines)
+    pc=0
+    b=""
+    for l in lines:
+        l = l.strip()
+        if not l:
+            continue
+        if ':' in l:
+            label,remaining = l.split(':')
+            instruction=remaining.strip()
+        else:
+            instruction=l
+        operation,remaining=instruction.split(" ")
+        operation=operation.strip()
+        remaining=remaining.strip()
+
+        if operation in opcode_table:
+            if opcode_table[operation]['type'] == 'R':
+                rd, rs1, rs2 = remaining.split(",")
+                print(encode_R(operation,rd,rs1,rs2))
+                b+=encode_R(operation,rd,rs1,rs2)
+
+            elif opcode_table[operation]['type'] == 'I':
+                if operation == 'lw':
+
+                    rd, remaining = remaining.split(",")
+                    remaining = remaining.strip()
+                    imm,rs1 = remaining.split("(")
+                    imm = imm.strip()
+                    rs1 = rs1[:-1]
+                    rs1 = rs1.strip()
+
+                    if imm in labels:
+                        imm = labels[imm] - pc
+                    print(encode_I(operation,rd,rs1,imm))
+                    b+=encode_I(operation,rd,rs1,imm)
+                else:
+                    rd, rs1, imm = remaining.split(",")
+                    if imm in labels:
+                        imm = labels[imm] - pc
+                    print(encode_I(operation,rd,rs1,imm))
+                    b+=encode_I(operation,rd,rs1,imm)
+            elif opcode_table[operation]['type'] == 'S':
+                
+                rs2, remaining = remaining.split(",")
+                remaining = remaining.strip()
+                imm,rs1 = remaining.split("(")
+                imm = imm.strip()
+                rs1 = rs1[:-1]
+                rs1 = rs1.strip()
+
+                if imm in labels:
+                    imm = labels[imm] - pc
+                print(encode_S(operation,rs1,rs2,imm))
+                b+=encode_S(operation,rs1,rs2,imm)
+            elif opcode_table[operation]['type'] == 'B':
+                
+                rs1, rs2, imm = remaining.split(",")
+                if imm in labels:
+                    imm = labels[imm] - pc
+                print(encode_B(operation,rs1,rs2,imm))
+                b+=encode_B(operation,rs1,rs2,imm)
+            elif opcode_table[operation]['type'] == 'J':
+                
+                rd, imm = remaining.split(",")
+                if imm in labels:
+                    imm = labels[imm] - pc
+                print(encode_J(operation,rd,imm))
+                b+=encode_J(operation,rd,imm)
+            pc+=4
+            b+="\n"
+
+    return b
+me=secondpass(l)
+print()
+me=me.strip()
+me=me.split("\n")
+me=[x.strip() for x in me]
+me=[x for x in me if x]
+
+with open("b.txt", "r") as f:
+    ans = f.readlines()
+    ans = [x.strip() for x in ans]
+    ans = [x for x in ans if x]
+
+for x in range(len(me)):
+    if me[x] != ans[x]:
+        print(f"{x+1}th Wrong")
+        print("me:",me[x])
+        print("ans:",ans[x])
+    else:
+        print(f"{x+1}th Correct")
+        
