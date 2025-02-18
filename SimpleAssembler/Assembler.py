@@ -268,4 +268,3 @@ for x in range(len(me)):
         print("ans:",ans[x])
     else:
         print(f"{x+1}th Correct")
-        
