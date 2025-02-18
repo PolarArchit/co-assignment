@@ -1,4 +1,6 @@
-print("Assembler")
+import sys
+
+# print("Assembler")
 
 registers = {
     'zero': '00000', 'ra': '00001', 'sp': '00010', 'gp': '00011',
@@ -35,75 +37,75 @@ opcode_table = {
 
 def error_R(op, rd, rs1, rs2):
     if op not in opcode_table:
-        print("Wrong instruction")
+        # print("Wrong instruction")
         return False
     if rd not in registers or rs1 not in registers or rs2 not in registers:
-        print("Wrong register")
+        # print("Wrong register")
         return False
     return True
 
 
 def error_I(op, rd, rs1, imm):
     if op not in opcode_table:
-        print("Wrong instruction")
+        # print("Wrong instruction")
         return False
     if rd not in registers or rs1 not in registers:
-        print("Wrong register")
+        # print("Wrong register")
         return False
     try:
         int(imm)
     except ValueError:
-        print("Wrong immediate value")
+        # print("Wrong immediate value")
         return False
     return True
 
 
 def error_S(op, rs1, rs2, imm):
     if op not in opcode_table:
-        print("Wrong instruction")
+        # print("Wrong instruction")
         return False
     if rs1 not in registers or rs2 not in registers:
-        print("Wrong register")
+        # print("Wrong register")
         return False
     try:
         int(imm)
     except ValueError:
-        print("Wrong immediate value")
+        # print("Wrong immediate value")
         return False
     return True
 
 
 def error_B(op, rs1, rs2, imm):
     if op not in opcode_table:
-        print("Wrong instruction")
+        # print("Wrong instruction")
         return False
     if rs1 not in registers or rs2 not in registers:
-        print("Wrong register")
+        # print("Wrong register")
         return False
     try:
         int(imm)
     except ValueError:
-        print("Wrong immediate value")
+        # print("Wrong immediate value")
         return False
     return True
 
 
 def error_J(op, rd, imm):
     if op not in opcode_table:
-        print("Wrong instruction")
+        # print("Wrong instruction")
         return False
     if rd not in registers:
-        print("Wrong register")
+        # print("Wrong register")
         return False
     try:
         int(imm)
     except ValueError:
-        print("Wrong immediate value")
+        # print("Wrong immediate value")
         return False
     return True
 
 
-def initialpass(lines):
+def labelfinding(lines):
     labels = {}
     pc = 0
     for l in lines:
@@ -175,22 +177,15 @@ def encode_J(op, rd, imm):
     if imm < 0:
         imm = (1 << 21) + imm
     imm = f"{imm & 0x1FFFFE:021b}"
-    print(imm)
+    # print(imm)
 
     return f"{imm[0]}{imm[10:20]}{imm[9]}{imm[1:9]}{registers[rd]}{op['opcode']}"
 
 
-with open("a.txt") as f:
-    l = f.readlines()
-    l = [x.strip() for x in l]
-    l = [x for x in l if x]
-    print(l)
-
-print(initialpass(l))
 
 
-def secondpass(lines):
-    labels = initialpass(lines)
+def run(lines):
+    labels = labelfinding(lines)
     pc = 0
     b = ""
     for l in lines:
@@ -208,13 +203,13 @@ def secondpass(lines):
 
         if operation in opcode_table:
             if opcode_table[operation]['type'] == 'R':
-                print("R")
+                # print("R")
                 rd, rs1, rs2 = remaining.split(",")
-                print(encode_R(operation, rd, rs1, rs2))
+                # print(encode_R(operation, rd, rs1, rs2))
                 b += encode_R(operation, rd, rs1, rs2)
 
             elif opcode_table[operation]['type'] == 'I':
-                print("I")
+                # print("I")
                 if operation == 'lw':
 
                     rd, remaining = remaining.split(",")
@@ -226,17 +221,17 @@ def secondpass(lines):
 
                     if imm in labels:
                         imm = labels[imm] - pc
-                    print(encode_I(operation, rd, rs1, imm))
+                    # print(encode_I(operation, rd, rs1, imm))
                     b += encode_I(operation, rd, rs1, imm)
                 else:
                     rd, rs1, imm = remaining.split(",")
                     if imm in labels:
                         imm = labels[imm] - pc
-                    print(encode_I(operation, rd, rs1, imm))
+                    # print(encode_I(operation, rd, rs1, imm))
                     b += encode_I(operation, rd, rs1, imm)
 
             elif opcode_table[operation]['type'] == 'S':
-                print("S")
+                # print("S")
                 rs2, remaining = remaining.split(",")
                 remaining = remaining.strip()
                 imm, rs1 = remaining.split("(")
@@ -246,48 +241,63 @@ def secondpass(lines):
 
                 if imm in labels:
                     imm = labels[imm] - pc
-                print(encode_S(operation, rs1, rs2, imm))
+                # print(encode_S(operation, rs1, rs2, imm))
                 b += encode_S(operation, rs1, rs2, imm)
             elif opcode_table[operation]['type'] == 'B':
-                print("B")
+                # print("B")
 
                 rs1, rs2, imm = remaining.split(",")
                 if imm in labels:
                     imm = labels[imm] - pc
-                print(encode_B(operation, rs1, rs2, imm))
+                # print(encode_B(operation, rs1, rs2, imm))
                 b += encode_B(operation, rs1, rs2, imm)
 
             elif opcode_table[operation]['type'] == 'J':
-                print("J")
+                # print("J")
                 rd, imm = remaining.split(",")
                 if imm in labels:
 
                     imm = labels[imm] - pc
-                print("imm: ", imm, " pc:", pc)
-                print(encode_J(operation, rd, imm))
+                # print("imm: ", imm, " pc:", pc)
+                # print(encode_J(operation, rd, imm))
                 b += encode_J(operation, rd, imm)
             pc += 4
             b += "\n"
 
     return b
 
+def main(inp, out):
+    # inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleAssembler\a.txt'
+    with open(inp, "r") as f:
+        l = f.readlines()
+        l = [x.strip() for x in l]
+        l = [x for x in l if x]
+    # print(l)
 
-me = secondpass(l)
-print()
-me = me.strip()
-me = me.split("\n")
-me = [x.strip() for x in me]
-me = [x for x in me if x]
+    # print(labelfinding(l))
 
-with open("b.txt", "r") as f:
-    ans = f.readlines()
-    ans = [x.strip() for x in ans]
-    ans = [x for x in ans if x]
+    
+    me = run(l)
+    # print()
+    me = me.strip()
+    me = me.split("\n")
+    me = [x.strip() for x in me]
+    me = [x for x in me if x]
 
-for x in range(len(me)):
-    if me[x] != ans[x]:
-        print(f"{x+1}th Wrong")
-        print("me: ", me[x])
-        print("ans:", ans[x])
-    else:
-        print(f"{x+1}th Correct")
+    
+    # out = r'C:\Users\amrit\Documents\co\co-assignment\SimpleAssembler\b.txt'
+    with open(out, "w") as f:
+        for i in me:
+            f.write(i)
+            f.write("\n")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        # print("Usage: python Assembler.py <input_file> <output_file>")
+        sys.exit(1)
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
+    print(input_file)
+    print( output_file)
+    main(input_file, output_file)
+    
