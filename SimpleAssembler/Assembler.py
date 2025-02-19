@@ -159,7 +159,7 @@ def encode_B(op, rs1, rs2, imm):
     if imm < 0:
         imm = (1 << 13) + imm
     imm = f"{imm & 0x1FFF:013b}"
-    if len(imm) != 12:
+    if len(imm) != 13:
         raise ValueError("Wrong Immediate Value")
     x = f"{imm[0]}{imm[2:8]}{registers[rs2]}{registers[rs1]}{f3op['funct3']}{imm[8:12]}{imm[1]}{f3op['opcode']}"
     return x
