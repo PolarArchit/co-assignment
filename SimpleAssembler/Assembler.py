@@ -265,6 +265,8 @@ def main(inp, out):
         l = f.readlines()
         l = [x.strip() for x in l]
         l = [x for x in l if x]
+        if l[-1] != 'beq zero,zero,0':
+            raise ValueError("Last line should be Virtual Halt")
     # print(l)
 
     # print(labelfinding(l))
