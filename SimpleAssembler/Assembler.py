@@ -134,6 +134,8 @@ def encode_I(op, rd, rs1, imm):
         raise ValueError("Wrong Instruction")
     f3op = opcode_table[op]
     imm = encode_imm(imm)
+    if len(imm) != 12:
+        raise ValueError("Wrong Immediate Value")
     x = f"{imm}{registers[rs1]}{f3op['funct3']}{registers[rd]}{f3op['opcode']}"
     return x
 
@@ -143,6 +145,8 @@ def encode_S(op, rs1, rs2, imm):
         raise ValueError("Wrong Instruction")
     f3op = opcode_table[op]
     imm = encode_imm(imm)
+    if len(imm) != 12:
+        raise ValueError("Wrong Immediate Value")
     x = f"{imm[0:7]}{registers[rs2]}{registers[rs1]}{f3op['funct3']}{imm[7:]}{f3op['opcode']}"
     return x
 
@@ -155,7 +159,8 @@ def encode_B(op, rs1, rs2, imm):
     if imm < 0:
         imm = (1 << 13) + imm
     imm = f"{imm & 0x1FFF:013b}"
-
+    if len(imm) != 12:
+        raise ValueError("Wrong Immediate Value")
     x = f"{imm[0]}{imm[2:8]}{registers[rs2]}{registers[rs1]}{f3op['funct3']}{imm[8:12]}{imm[1]}{f3op['opcode']}"
     return x
 
@@ -170,7 +175,8 @@ def encode_J(op, rd, imm):
         imm = (1 << 21) + imm
     imm = f"{imm & 0x1FFFFE:021b}"
     # print(imm)
-
+    if len(imm) != 21:
+        raise ValueError("Wrong Immediate Value")
     x = f"{imm[0]}{imm[10:20]}{imm[9]}{imm[1:9]}{registers[rd]}{op['opcode']}"
     return x
 
