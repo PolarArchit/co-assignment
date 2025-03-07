@@ -275,7 +275,7 @@ def main(inp, out):
             if 'beq zero,zero,0' in i:
                 break
         else:
-            raise "beq NOT FOUND"
+            raise ValueError("BEQ NOT FOUND")
                 
        
     # print(l)
