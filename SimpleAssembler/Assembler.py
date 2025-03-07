@@ -271,10 +271,13 @@ def main(inp, out):
         l = f.readlines()
         l = [x.strip() for x in l]
         l = [x for x in l if x]
-        if 'beq zero,zero,0' not in l:
-            raise ValueError("Virtual Halt Missing")
-        if l[-1] != 'beq zero,zero,0':
-            raise ValueError("Last line should be Virtual Halt")
+        for i in l:
+            if 'beq zero,zero,0' in i:
+                break
+        else:
+            raise "beq NOT FOUND"
+                
+       
     # print(l)
 
     # print(labelfinding(l))
