@@ -191,12 +191,17 @@ def run(lines):
         l = l.strip()
         if not l:
             continue
+            
         if ':' in l:
             label, remaining = l.split(':')
             instruction = remaining.strip()
+            
         else:
             instruction = l
-        operation, remaining = instruction.split(" ")
+        try:
+            operation, remaining = instruction.split(" ")
+        except:
+            raise ValueError(f"{instruction}")
         operation = operation.strip()
         remaining = remaining.strip()
 
@@ -271,13 +276,11 @@ def main(inp, out):
         l = f.readlines()
         l = [x.strip() for x in l]
         l = [x for x in l if x]
-        for i in l:
-            if 'beq zero,zero,0' in i:
-                break
-        else:
-            raise ValueError("BEQ NOT FOUND")
-                
-       
+
+        if 'beq zero,zero,0' not in str(l):
+            raise ValueError("Virtual Halt Missing")
+        if 'beq zero,zero,0' not in l[-1]:
+            raise ValueError(f"{l}Last line should be Virtual Halt")
     # print(l)
 
     # print(labelfinding(l))
