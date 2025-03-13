@@ -13,7 +13,9 @@ registers = {
     '11100': 't3', '11101': 't4', '11110': 't5', '11111': 't6'
 }
 
-reg_values = {reg: 0 for reg in registers.keys()}
+reg_values = {reg: 0 for reg in registers.values()}
+reg_values['sp']=380
+
 mem_values = {"0x"+f"{loc:08x}".upper(): 0 for loc in range(65536, 65660 + 1, 4)}
 
 opcode_table = {
