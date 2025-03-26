@@ -13,8 +13,8 @@ registers = {
     '11100': 't3', '11101': 't4', '11110': 't5', '11111': 't6'
 }
 
-reg_values = {reg: 0 for reg in registers.values()}
-reg_values['sp']=380
+reg_values = {reg: '0'*32 for reg in registers.keys()}
+reg_values['00010']='00000000000000000000000101111100'
 
 mem_values = {"0x"+f"{loc:08x}".upper(): 0 for loc in range(65536, 65660 + 1, 4)}
 
@@ -104,6 +104,63 @@ type_table={'0110011':'R',
 }
 
 
+def signed_comparison(a,b):
+    if a[0]=='1':
+        value_a=-int(a[1:32], 2)
+        print(value_a)
+    else:
+        value_a=int(a[0:32], 2)
+        print(value_a)
+    if b[0]=='1':
+        value_b=-int(b[1:32], 2)
+        print(value_b)
+    else:
+        value_b=int(b[0:32], 2)
+        print(value_b)
+    if value_a<value_b:
+        return True
+    return False
+    
+
+def R_execute(opcode,f7,rs2,rs1,f3,rd):
+    if opcode_table[opcode][f7][f3]=='add':
+        reg_values[rd] = int(reg_values[rs1],2) + int(reg_values[rs2],2)
+        reg_values[rd] = bin(reg_values[rd] & 0xFFFFFFFF)[2:]
+        reg_values[rd]=reg_values[rd].zfill(32)
+
+    
+    if opcode_table[opcode][f7][f3]=='slt':
+        if signed_comparison(reg_values[rs1],reg_values[rs2])==True:
+            reg_values[rd]='00000000000000000000000000000001'
+
+    if opcode_table[opcode][f7][f3]=='srl':
+
+        value = reg_values[rs2][27:32]
+        value  = int(value, 2)
+        print(value)
+        reg_values[rd]=reg_values[rs1][0:(32-value)]
+        reg_values[rd]='0'*value+reg_values[rd]
+
+    if opcode_table[opcode][f7][f3]=='or':
+        final=[]
+        for i in range(32):
+            if reg_values[rs1][i]=='1' or reg_values[rs2][i]=='1':
+                final.append('1')
+            elif reg_values[rs1][i]=='0' and reg_values[rs2][i]=='0':
+                final.append('0')
+        final = ''.join(final)
+        reg_values[rd]=final
+    if opcode_table[opcode][f7][f3]=='and':
+        final=[]
+        for i in range(32):
+            if reg_values[rs1][i]=='1' and reg_values[rs2][i]=='1':
+                final.append('1')
+            elif reg_values[rs1][i]=='0' or reg_values[rs2][i]=='0':
+                final.append('0')
+        final = ''.join(final)
+        reg_values[rd]=final
+
+
 def run(l):
     l = [x.strip() for x in l]
     l = [x for x in l if x]
@@ -125,7 +182,7 @@ def run(l):
             assert rs1 in registers
             assert rs2 in registers
             assert rd in registers
-            
+            R_execute(opcode,f7,rs2,rs1,f3,rd)
 
         elif it=='I':
             imm=line[:12]
@@ -166,7 +223,8 @@ def run(l):
 
 
     
-inp="bin.txt"
+# inp="bin.txt"
+inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
 with open(inp, "r") as f:
     l = f.readlines()
 run(l)
