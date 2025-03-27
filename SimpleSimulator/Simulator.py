@@ -223,8 +223,10 @@ def run(l):
 
 
     
-# inp="bin.txt"
-inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
+#inp="bin.txt"
+#inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
+inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
+
 with open(inp, "r") as f:
     l = f.readlines()
 run(l)
