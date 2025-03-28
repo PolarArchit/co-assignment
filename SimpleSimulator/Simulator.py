@@ -59,9 +59,7 @@ opcode_table = {
         }
     },
     '1101111': {
-        '': {
-            '': 'jal'
-        }
+        '': 'jal'
     }
 }
 
@@ -86,6 +84,11 @@ def checkB(opcode, f3):
 
 def checkI(opcode, f3):
     if '' in opcode_table[opcode] and f3 in opcode_table[opcode]['']:
+        return True
+    else:
+        raise ValueError("UNKNOWN FUNCTION")
+def checkJ(opcode):
+    if '' in opcode_table[opcode]:
         return True
     else:
         raise ValueError("UNKNOWN FUNCTION")
@@ -160,6 +163,14 @@ def R_execute(opcode,f7,rs2,rs1,f3,rd):
         final = ''.join(final)
         reg_values[rd]=final
 
+def J_execute(opcode, imm, rd, PC):
+    if opcode_table[opcode][''] == 'jal':
+        imm = int(imm, 2)
+        if (imm >> 20) & 1:
+            imm = imm - (1 << 21)  
+        reg_values[rd] = format(PC + 4, '032b')  
+        PC = PC + imm
+        return PC
 
 def run(l):
     l = [x.strip() for x in l]
@@ -209,16 +220,15 @@ def run(l):
             assert checkB(opcode,f3)
             assert rs1 in registers
             assert rs2 in registers
-            
         elif it=='J':
-            imm=line[0]+line[12:20]+line[11]+line[1:11]
+            imm = line[0] + line[12:20] + line[11] + line[1:11]
             rd=line[20:25]
             assert rd in registers
-            
+            assert checkJ(opcode)
+            assert rd in registers
+            pc = J_execute(opcode,imm,rd,pc)
         else:
             raise ValueError("UNKNOWN OPCODE")
-            
-
         print(it)
 
 
@@ -226,7 +236,6 @@ def run(l):
 #inp="bin.txt"
 #inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
 inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
-
 with open(inp, "r") as f:
     l = f.readlines()
 run(l)
