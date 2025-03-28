@@ -109,13 +109,13 @@ type_table={'0110011':'R',
 
 def signed_comparison(a,b):
     if a[0]=='1':
-        value_a=-int(a[1:32], 2)
+        value_a=-(2**31)+int(a[1:32], 2)
         print(value_a)
     else:
         value_a=int(a[0:32], 2)
         print(value_a)
     if b[0]=='1':
-        value_b=-int(b[1:32], 2)
+        value_b=-(2**31)+int(b[1:32], 2)
         print(value_b)
     else:
         value_b=int(b[0:32], 2)
