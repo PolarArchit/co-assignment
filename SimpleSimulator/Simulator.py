@@ -132,11 +132,11 @@ def R_execute(opcode,f7,rs2,rs1,f3,rd):
         reg_values[rd]=reg_values[rd].zfill(32)
 
     
-    if opcode_table[opcode][f7][f3]=='slt':
+    elif opcode_table[opcode][f7][f3]=='slt':
         if signed_comparison(reg_values[rs1],reg_values[rs2])==True:
             reg_values[rd]='00000000000000000000000000000001'
 
-    if opcode_table[opcode][f7][f3]=='srl':
+    elif opcode_table[opcode][f7][f3]=='srl':
 
         value = reg_values[rs2][27:32]
         value  = int(value, 2)
@@ -144,7 +144,7 @@ def R_execute(opcode,f7,rs2,rs1,f3,rd):
         reg_values[rd]=reg_values[rs1][0:(32-value)]
         reg_values[rd]='0'*value+reg_values[rd]
 
-    if opcode_table[opcode][f7][f3]=='or':
+    elif opcode_table[opcode][f7][f3]=='or':
         final=[]
         for i in range(32):
             if reg_values[rs1][i]=='1' or reg_values[rs2][i]=='1':
@@ -153,7 +153,7 @@ def R_execute(opcode,f7,rs2,rs1,f3,rd):
                 final.append('0')
         final = ''.join(final)
         reg_values[rd]=final
-    if opcode_table[opcode][f7][f3]=='and':
+    elif opcode_table[opcode][f7][f3]=='and':
         final=[]
         for i in range(32):
             if reg_values[rs1][i]=='1' and reg_values[rs2][i]=='1':
@@ -162,6 +162,10 @@ def R_execute(opcode,f7,rs2,rs1,f3,rd):
                 final.append('0')
         final = ''.join(final)
         reg_values[rd]=final
+    elif opcode_table[opcode][f7][f3]=='sub':
+        reg_values[rd] = int(reg_values[rs1],2) - int(reg_values[rs2],2)
+        reg_values[rd] = bin(reg_values[rd] & 0xFFFFFFFF)[2:]
+        reg_values[rd]=reg_values[rd].zfill(32)
 
 def J_execute(opcode, imm, rd, PC):
     if opcode_table[opcode][''] == 'jal':
