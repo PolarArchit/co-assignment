@@ -110,21 +110,31 @@ type_table={'0110011':'R',
 def signed_comparison(a,b):
     if a[0]=='1':
         value_a=-(2**31)+int(a[1:32], 2)
-        print(value_a)
     else:
         value_a=int(a[0:32], 2)
-        print(value_a)
     if b[0]=='1':
         value_b=-(2**31)+int(b[1:32], 2)
-        print(value_b)
     else:
         value_b=int(b[0:32], 2)
-        print(value_b)
     if value_a<value_b:
         return True
     return False
     
+#signed extension function
+def sign_extension(a):
+    if a[0]=='0':
+        a = '0'*(32-len(a))+a
+    elif a[0]=='1':
+        a = '1'*(32-len(a))+a
+    return a
 
+#function that represent decimal value in 2s complement notation
+def sign_rep(a):
+    if a[0]=='0':
+        a=int(a[0:len(a)], 2)
+    elif a[0]=='1':
+        a=-(2**(len(a)-1))+int(a[1:32], 2)
+    return a
 def R_execute(opcode,f7,rs2,rs1,f3,rd):
     if opcode_table[opcode][f7][f3]=='add':
         reg_values[rd] = int(reg_values[rs1],2) + int(reg_values[rs2],2)
@@ -175,6 +185,16 @@ def J_execute(opcode, imm, rd, PC):
         reg_values[rd] = format(PC + 4, '032b')  
         PC = PC + imm
         return PC
+    return reg_values[rd]
+
+def I_execute(imm, rs1 ,f3, rd,opcode):
+    if opcode_table[opcode][''][f3]=='addi':
+        imm = sign_extension(imm)
+        imm = sign_rep(imm)
+        reg_values[rd]=int(reg_values[rs1],2)+imm
+        reg_values[rd]=format(reg_values[rd] & 0xFFFFFFFF, '032b')
+    return reg_values[rd]
+
 
 def run(l):
     l = [x.strip() for x in l]
@@ -197,7 +217,7 @@ def run(l):
             assert rs1 in registers
             assert rs2 in registers
             assert rd in registers
-            R_execute(opcode,f7,rs2,rs1,f3,rd)
+
 
         elif it=='I':
             imm=line[:12]
@@ -206,7 +226,8 @@ def run(l):
             rd=line[20:25]
             assert checkI(opcode,f3)
             assert rs1 in registers
-            
+            I_execute(imm, rs1 ,f3, rd,opcode)
+
         elif it=='S':
             imm=line[:7]+line[20:25]
             rs2=line[7:12]
@@ -238,8 +259,8 @@ def run(l):
 
     
 #inp="bin.txt"
-#inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
-inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
+inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
+# inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
 with open(inp, "r") as f:
     l = f.readlines()
 run(l)
