@@ -199,10 +199,14 @@ def I_execute(imm, rs1 ,f3, rd,opcode):
 def run(l):
     l = [x.strip() for x in l]
     l = [x for x in l if x]
-    print(l)
-
+    #print(l)
+    dct = {}
+    for i in range(len(l)):
+        dct[i*4] = l[i]
+    print(dct)
     pc=0
-    for line in l:
+    while pc in dct:
+        line = dct[pc]
         opcode=line[-7:]
         if opcode not in opcode_table:
             raise ValueError("UNKNOWN OPCODE")
@@ -217,6 +221,7 @@ def run(l):
             assert rs1 in registers
             assert rs2 in registers
             assert rd in registers
+            pc+=4
 
 
         elif it=='I':
@@ -227,7 +232,8 @@ def run(l):
             assert checkI(opcode,f3)
             assert rs1 in registers
             I_execute(imm, rs1 ,f3, rd,opcode)
-
+            # change in branching jalr it will not be +4
+            pc+=4 
         elif it=='S':
             imm=line[:7]+line[20:25]
             rs2=line[7:12]
@@ -236,7 +242,7 @@ def run(l):
             assert checkS(opcode,f3)
             assert rs1 in registers
             assert rs2 in registers
-            
+            pc+=4
         elif it=='B':
             imm=line[0]+line[24]+line[1:7]+line[20:24]
             rs2=line[7:12]
@@ -245,6 +251,7 @@ def run(l):
             assert checkB(opcode,f3)
             assert rs1 in registers
             assert rs2 in registers
+            pc+=4            # change in branching beq bne it will not be +4
         elif it=='J':
             imm = line[0] + line[12:20] + line[11] + line[1:11]
             rd=line[20:25]
