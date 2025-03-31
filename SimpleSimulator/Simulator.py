@@ -63,6 +63,14 @@ opcode_table = {
     }
 }
 
+def copytofile(pc):
+    string = ""
+    string += format(pc, '#034b')
+    for i in reg_values:
+        string += ' '
+        string += '0b' + i
+    string += '\n'
+    return string
 
 def checkR(opcode,f7,f3):
     if f7 in opcode_table[opcode] and f3 in opcode_table[opcode][f7]:
