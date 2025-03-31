@@ -222,20 +222,25 @@ def I_execute(imm, rs1 ,f3, rd,opcode,pc):
         return pc + 4
 
 def B_execute(opcode,imm,rs1,rs2,pc,f3):
+    imm+='0'
     imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
-        
+    
     if opcode_table[opcode][''][f3]=='beq':
         if reg_values[rs1]==reg_values[rs2]:
             if imm==0:
                 return "HALT"
+            
             return pc+imm
         return pc+4
     if opcode_table[opcode][''][f3]=='bne':
         if reg_values[rs1]!=reg_values[rs2]:
+            
             return pc+imm
+
         return pc+4
     
     if opcode_table[opcode][''][f3]=='blt':
+        
         if sign_rep(reg_values[rs1]) < sign_rep(reg_values[rs2]):
             return pc + imm
         return pc+4
