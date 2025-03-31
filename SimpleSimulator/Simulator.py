@@ -212,12 +212,11 @@ def I_execute(imm, rs1 ,f3, rd,opcode,pc,line):
     if opcode_table[opcode][''][f3] == 'jalr':
         
         imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
-        
-        reg_values[rd] = format(pc + 4, '032b')  
-        
-        pc = int(reg_values[rs1], 2) + imm
-        pc = pc & ~1
-        return pc
+                
+        new_pc = int(reg_values[rs1], 2) + imm
+        new_pc = new_pc & ~1
+        reg_values[rd] = format(pc + 4, '032b')
+        return new_pc
     
     if opcode_table[opcode][''][f3] == 'lw':
         imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
