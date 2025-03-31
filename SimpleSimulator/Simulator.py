@@ -220,7 +220,7 @@ def I_execute(imm, rs1 ,f3, rd,opcode,pc,line):
     
     if opcode_table[opcode][''][f3] == 'lw':
         imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
-        address = 0+ imm + 0x00010000
+        address = int(reg_values[rs1], 2) + imm
         address_hex = "0x" + format(address, '08X')
         reg_values[rd] = format(mem_values[address_hex], '032b')
         return pc + 4
