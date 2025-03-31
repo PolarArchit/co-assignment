@@ -7,6 +7,5 @@ equal: add gp,gp,a2
 bne gp,a2,unequal
 add gp,gp,ra
 unequal: add gp,gp,a2
-blt ra,a2,halt
 add gp,gp,ra
 halt: beq zero,zero,0

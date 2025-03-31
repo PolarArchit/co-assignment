@@ -11,7 +11,7 @@ jal s9,jumpHere
 add s9,ra,s2
 jumpHere: add sp,zero,zero
 addi sp,zero,12
-addi a7,zero,7
+addi a7,zero,23
 add a7,a7,a7
 add a7,a7,a7
 add a7,a7,a7

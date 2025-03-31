@@ -109,6 +109,7 @@ class AsmGrader(Grader):
 				expectedBin = open(exact_machine_code_file,'r').readlines()
 			except FileNotFoundError:
 				self.printSev(self.HIGH, bcolors.WARNING + "[Golden Binary Opcode File Not Found]\n" + exact_machine_code_file)
+				expectedBin = " "
 			
 
 			if self.diff(generatedBin, expectedBin):
