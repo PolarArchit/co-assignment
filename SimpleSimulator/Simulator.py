@@ -202,7 +202,7 @@ def J_execute(opcode, imm, rd, PC):
         return PC
     return reg_values[rd]
 
-def I_execute(imm, rs1 ,f3, rd,opcode,pc):
+def I_execute(imm, rs1 ,f3, rd,opcode,pc,line):
     if opcode_table[opcode][''][f3] == 'addi':
         imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
         reg_values[rd] = int(reg_values[rs1], 2) + imm
@@ -210,15 +210,20 @@ def I_execute(imm, rs1 ,f3, rd,opcode,pc):
         return pc + 4
     
     if opcode_table[opcode][''][f3] == 'jalr':
+        
         imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
+        
         reg_values[rd] = format(pc + 4, '032b')  
+        
         pc = int(reg_values[rs1], 2) + imm
+        pc = pc & ~1
         return pc
     
     if opcode_table[opcode][''][f3] == 'lw':
         imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
-        address = "0x" + format(int(reg_values[rs1], 2) + imm, '08X')
-        reg_values[rd] = format(mem_values[address], '032b')
+        address = 0+ imm + 0x00010000
+        address_hex = "0x" + format(address, '08X')
+        reg_values[rd] = format(mem_values[address_hex], '032b')
         return pc + 4
 
 def B_execute(opcode,imm,rs1,rs2,pc,f3):
@@ -299,7 +304,7 @@ def run(l):
             rd=line[20:25]
             assert checkI(opcode,f3)
             assert rs1 in registers
-            pc=I_execute(imm, rs1 ,f3, rd,opcode,pc)
+            pc=I_execute(imm, rs1 ,f3, rd,opcode,pc,line)
 
         elif it=='S':
             imm=line[:7]+line[20:25]
