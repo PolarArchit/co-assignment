@@ -1,6 +1,6 @@
-#import sys
+# import sys
 
-#print("Sim")
+# print("Sim")
 
 registers = {
     '00000': 'zero', '00001': 'ra', '00010': 'sp', '00011': 'gp',
@@ -14,12 +14,13 @@ registers = {
 }
 
 reg_values = {reg: '0'*32 for reg in registers.keys()}
-reg_values['00010']='00000000000000000000000101111100'
+reg_values['00010'] = '00000000000000000000000101111100'
 
-mem_values = {"0x"+f"{loc:08x}".upper(): 0 for loc in range(65536, 65660 + 1, 4)}
+mem_values = {
+    "0x"+f"{loc:08x}".upper(): 0 for loc in range(65536, 65660 + 1, 4)}
 
 opcode_table = {
-    '0110011': { 
+    '0110011': {
         '0000000': {
             '000': 'add',
             '010': 'slt',
@@ -63,6 +64,7 @@ opcode_table = {
     }
 }
 
+
 def copytofile(pc):
     string = ""
     string += format(pc, '#034b')
@@ -72,11 +74,13 @@ def copytofile(pc):
     string += '\n'
     return string
 
-def checkR(opcode,f7,f3):
+
+def checkR(opcode, f7, f3):
     if f7 in opcode_table[opcode] and f3 in opcode_table[opcode][f7]:
         return True
     else:
         raise ValueError("UNKNOWN FUNCTION")
+
 
 def checkS(opcode, f3):
     if '' in opcode_table[opcode] and f3 in opcode_table[opcode]['']:
@@ -84,171 +88,199 @@ def checkS(opcode, f3):
     else:
         raise ValueError("UNKNOWN FUNCTION")
 
+
 def checkB(opcode, f3):
     if '' in opcode_table[opcode] and f3 in opcode_table[opcode]['']:
         return True
     else:
         raise ValueError("UNKNOWN FUNCTION")
 
+
 def checkI(opcode, f3):
     if '' in opcode_table[opcode] and f3 in opcode_table[opcode]['']:
         return True
     else:
         raise ValueError("UNKNOWN FUNCTION")
+
+
 def checkJ(opcode):
     if '' in opcode_table[opcode]:
         return True
     else:
         raise ValueError("UNKNOWN FUNCTION")
 
-type_table={'0110011':'R',
-            
-            '0000011':'I',
-            '0010011':'I',
-            '1100111':'I',
-            
-            '0100011':'S',
-            
-            '1100011':'B',
-            
-            '1101111':'J'
-}
+
+type_table = {'0110011': 'R',
+
+              '0000011': 'I',
+              '0010011': 'I',
+              '1100111': 'I',
+
+              '0100011': 'S',
+
+              '1100011': 'B',
+
+              '1101111': 'J'
+              }
 
 
-def signed_comparison(a,b):
-    if a[0]=='1':
-        value_a=-(2**31)+int(a[1:32], 2)
+def signed_comparison(a, b):
+    if a[0] == '1':
+        value_a = -(2**31)+int(a[1:32], 2)
     else:
-        value_a=int(a[0:32], 2)
-    if b[0]=='1':
-        value_b=-(2**31)+int(b[1:32], 2)
+        value_a = int(a[0:32], 2)
+    if b[0] == '1':
+        value_b = -(2**31)+int(b[1:32], 2)
     else:
-        value_b=int(b[0:32], 2)
-    if value_a<value_b:
+        value_b = int(b[0:32], 2)
+    if value_a < value_b:
         return True
     return False
-    
-#signed extension function
+
+# signed extension function
+
+
 def sign_extension(a):
-    if a[0]=='0':
+    if a[0] == '0':
         a = '0'*(32-len(a))+a
-    elif a[0]=='1':
+    elif a[0] == '1':
         a = '1'*(32-len(a))+a
     return a
 
-#function that represent decimal value in 2s complement notation
+# function that represent decimal value in 2s complement notation
+
+
 def sign_rep(a):
-    if a[0]=='0':
-        a=int(a[0:len(a)], 2)
-    elif a[0]=='1':
-        a=-(2**(len(a)-1))+int(a[1:32], 2)
+    if a[0] == '0':
+        a = int(a[0:len(a)], 2)
+    elif a[0] == '1':
+        a = -(2**(len(a)-1))+int(a[1:32], 2)
     return a
-def R_execute(opcode,f7,rs2,rs1,f3,rd):
-    #print("-"*100)
-    if opcode_table[opcode][f7][f3]=='add':
-        #print("ADD")
 
-        reg_values[rd] = int(reg_values[rs1],2) + int(reg_values[rs2],2)
+
+def R_execute(opcode, f7, rs2, rs1, f3, rd):
+    # print("-"*100)
+    if opcode_table[opcode][f7][f3] == 'add':
+        # print("ADD")
+
+        reg_values[rd] = int(reg_values[rs1], 2) + int(reg_values[rs2], 2)
         reg_values[rd] = bin(reg_values[rd] & 0xFFFFFFFF)[2:]
-        reg_values[rd]=reg_values[rd].zfill(32)
-            
-    elif opcode_table[opcode][f7][f3]=='slt':
-        #print("SLT")
-        if signed_comparison(reg_values[rs1],reg_values[rs2])==True:
-            reg_values[rd]='00000000000000000000000000000001'
+        reg_values[rd] = reg_values[rd].zfill(32)
 
-    elif opcode_table[opcode][f7][f3]=='srl':
-        #print("SRL")
+    elif opcode_table[opcode][f7][f3] == 'slt':
+        # print("SLT")
+        if signed_comparison(reg_values[rs1], reg_values[rs2]) == True:
+            reg_values[rd] = '00000000000000000000000000000001'
+
+    elif opcode_table[opcode][f7][f3] == 'srl':
+        # print("SRL")
 
         value = reg_values[rs2][27:32]
-        value  = int(value, 2)
-    
-        reg_values[rd]=reg_values[rs1][0:(32-value)]
-        reg_values[rd]='0'*value+reg_values[rd]
+        value = int(value, 2)
 
-    elif opcode_table[opcode][f7][f3]=='or':
-        #print("OR")
-        final=[]
+        reg_values[rd] = reg_values[rs1][0:(32-value)]
+        reg_values[rd] = '0'*value+reg_values[rd]
+
+    elif opcode_table[opcode][f7][f3] == 'or':
+        # print("OR")
+        final = []
         for i in range(32):
-            if reg_values[rs1][i]=='1' or reg_values[rs2][i]=='1':
+            if reg_values[rs1][i] == '1' or reg_values[rs2][i] == '1':
                 final.append('1')
-            elif reg_values[rs1][i]=='0' and reg_values[rs2][i]=='0':
+            elif reg_values[rs1][i] == '0' and reg_values[rs2][i] == '0':
                 final.append('0')
         final = ''.join(final)
-        reg_values[rd]=final
-    elif opcode_table[opcode][f7][f3]=='and':
-        #print("AND")
-        final=[]
+        reg_values[rd] = final
+    elif opcode_table[opcode][f7][f3] == 'and':
+        # print("AND")
+        final = []
         for i in range(32):
-            if reg_values[rs1][i]=='1' and reg_values[rs2][i]=='1':
+            if reg_values[rs1][i] == '1' and reg_values[rs2][i] == '1':
                 final.append('1')
-            elif reg_values[rs1][i]=='0' or reg_values[rs2][i]=='0':
+            elif reg_values[rs1][i] == '0' or reg_values[rs2][i] == '0':
                 final.append('0')
         final = ''.join(final)
-        reg_values[rd]=final
-    elif opcode_table[opcode][f7][f3]=='sub':
-        #print("SUB")
-        reg_values[rd] = int(reg_values[rs1],2) - int(reg_values[rs2],2)
+        reg_values[rd] = final
+    elif opcode_table[opcode][f7][f3] == 'sub':
+        # print("SUB")
+        reg_values[rd] = int(reg_values[rs1], 2) - int(reg_values[rs2], 2)
         reg_values[rd] = bin(reg_values[rd] & 0xFFFFFFFF)[2:]
-        reg_values[rd]=reg_values[rd].zfill(32)
+        reg_values[rd] = reg_values[rd].zfill(32)
+
+
+def S_execute(opcode, imm, rs1, rs2, f3, PC):
+    if opcode_table[opcode][''] == 'sw':
+        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(
+            sign_extension(imm), 2) - (1 << 32)
+        address = int(reg_values[rs1], 2) + imm
+        address_hex = "0x" + format(address, '08X')
+        mem_values[address_hex] = int(reg_values[rs2], 2)
+        PC = PC + 4
+        return PC
+
 
 def J_execute(opcode, imm, rd, PC):
     if opcode_table[opcode][''] == 'jal':
         imm = int(imm, 2)
         if (imm >> 20) & 1:
-            imm = imm - (1 << 21)  
-        reg_values[rd] = format(PC + 4, '032b')  
+            imm = imm - (1 << 21)
+        reg_values[rd] = format(PC + 4, '032b')
         PC = PC + imm
         return PC
     return reg_values[rd]
 
-def I_execute(imm, rs1 ,f3, rd,opcode,pc,line):
+
+def I_execute(imm, rs1, f3, rd, opcode, pc, line):
     if opcode_table[opcode][''][f3] == 'addi':
-        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
+        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(
+            sign_extension(imm), 2) - (1 << 32)
         reg_values[rd] = int(reg_values[rs1], 2) + imm
         reg_values[rd] = format(reg_values[rd] & 0xFFFFFFFF, '032b')
         return pc + 4
-    
+
     if opcode_table[opcode][''][f3] == 'jalr':
-        
-        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
-                
+
+        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(
+            sign_extension(imm), 2) - (1 << 32)
+
         new_pc = int(reg_values[rs1], 2) + imm
         new_pc = new_pc & ~1
         reg_values[rd] = format(pc + 4, '032b')
         return new_pc
-    
+
     if opcode_table[opcode][''][f3] == 'lw':
-        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
+        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(
+            sign_extension(imm), 2) - (1 << 32)
         address = int(reg_values[rs1], 2) + imm
         address_hex = "0x" + format(address, '08X')
         reg_values[rd] = format(mem_values[address_hex], '032b')
         return pc + 4
 
-def B_execute(opcode,imm,rs1,rs2,pc,f3):
-    imm+='0'
-    imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
-    
-    if opcode_table[opcode][''][f3]=='beq':
-        if reg_values[rs1]==reg_values[rs2]:
-            if imm==0:
+
+def B_execute(opcode, imm, rs1, rs2, pc, f3):
+    imm += '0'
+    imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(
+        sign_extension(imm), 2) - (1 << 32)
+
+    if opcode_table[opcode][''][f3] == 'beq':
+        if reg_values[rs1] == reg_values[rs2]:
+            if imm == 0:
                 return "HALT"
-            
+
             return pc+imm
         return pc+4
-    if opcode_table[opcode][''][f3]=='bne':
-        if reg_values[rs1]!=reg_values[rs2]:
-            
+    if opcode_table[opcode][''][f3] == 'bne':
+        if reg_values[rs1] != reg_values[rs2]:
+
             return pc+imm
 
         return pc+4
-    
-    if opcode_table[opcode][''][f3]=='blt':
-        
+
+    if opcode_table[opcode][''][f3] == 'blt':
+
         if sign_rep(reg_values[rs1]) < sign_rep(reg_values[rs2]):
             return pc + imm
         return pc+4
-    
 
 
 def copytofile(pc):
@@ -261,95 +293,90 @@ def copytofile(pc):
     return string
 
 
-
 def run(l):
-    output=""
+    output = ""
 
     l = [x.strip() for x in l]
     l = [x for x in l if x]
-    ##print(l)
+    # print(l)
     dct = {}
     for i in range(len(l)):
         dct[i*4] = l[i]
-    #print(dct)
-    pc=0
+    # print(dct)
+    pc = 0
     while pc in dct:
-        
+
         line = dct[pc]
-        opcode=line[-7:]
+        opcode = line[-7:]
         if opcode not in opcode_table:
             raise ValueError("UNKNOWN OPCODE")
-        it=type_table[opcode]
-        
+        it = type_table[opcode]
 
-        if it=='R':
-            f7=line[:7]
-            rs2=line[7:12]
-            rs1=line[12:17]
-            f3=line[17:20]
-            rd=line[20:25]
-            assert checkR(opcode,f7,f3)
+        if it == 'R':
+            f7 = line[:7]
+            rs2 = line[7:12]
+            rs1 = line[12:17]
+            f3 = line[17:20]
+            rd = line[20:25]
+            assert checkR(opcode, f7, f3)
             assert rs1 in registers
             assert rs2 in registers
             assert rd in registers
-            R_execute(opcode,f7,rs2,rs1,f3,rd)
-            pc+=4
+            R_execute(opcode, f7, rs2, rs1, f3, rd)
+            pc += 4
 
-
-        elif it=='I':
-            imm=line[:12]
-            rs1=line[12:17]
-            f3=line[17:20]
-            rd=line[20:25]
-            assert checkI(opcode,f3)
+        elif it == 'I':
+            imm = line[:12]
+            rs1 = line[12:17]
+            f3 = line[17:20]
+            rd = line[20:25]
+            assert checkI(opcode, f3)
             assert rs1 in registers
-            pc=I_execute(imm, rs1 ,f3, rd,opcode,pc,line)
+            pc = I_execute(imm, rs1, f3, rd, opcode, pc, line)
 
-        elif it=='S':
-            imm=line[:7]+line[20:25]
-            rs2=line[7:12]
-            rs1=line[12:17]
-            f3=line[17:20]
-            assert checkS(opcode,f3)
-            assert rs1 in registers
-            assert rs2 in registers
-            pc+=4
-
-        elif it=='B':
-            imm=line[0]+line[24]+line[1:7]+line[20:24]
-            rs2=line[7:12]
-            rs1=line[12:17]
-            f3=line[17:20]
-            assert checkB(opcode,f3)
+        elif it == 'S':
+            imm = line[:7]+line[20:25]
+            rs2 = line[7:12]
+            rs1 = line[12:17]
+            f3 = line[17:20]
+            assert checkS(opcode, f3)
             assert rs1 in registers
             assert rs2 in registers
-            old_pc=pc
-            pc=B_execute(opcode,imm,rs1,rs2,pc,f3)
-            if pc=="HALT":
+            pc = S_execute(opcode, imm, rs1, rs2, f3, pc)
+
+        elif it == 'B':
+            imm = line[0]+line[24]+line[1:7]+line[20:24]
+            rs2 = line[7:12]
+            rs1 = line[12:17]
+            f3 = line[17:20]
+            assert checkB(opcode, f3)
+            assert rs1 in registers
+            assert rs2 in registers
+            old_pc = pc
+            pc = B_execute(opcode, imm, rs1, rs2, pc, f3)
+            if pc == "HALT":
                 output += f"0b{format(old_pc, '032b')} "
                 for i in reg_values.keys():
                     output += f"0b{reg_values[i]} "
                 output += "\n"
-                #print("HALT")
+                # print("HALT")
                 break
 
-        elif it=='J':
+        elif it == 'J':
             imm = line[0] + line[12:20] + line[11] + line[1:11]
-            rd=line[20:25]
+            rd = line[20:25]
             assert rd in registers
             assert checkJ(opcode)
             assert rd in registers
-            pc = J_execute(opcode,imm,rd,pc)
+            pc = J_execute(opcode, imm, rd, pc)
         else:
             raise ValueError("UNKNOWN OPCODE")
-        
+
         output += f"0b{format(pc, '032b')} "
-        
+
         for i in reg_values.keys():
             output += f"0b{reg_values[i]} "
         output += "\n"
-        
-    
 
         """
         print(it," : ",pc)
@@ -360,9 +387,9 @@ def run(l):
     with open("SimpleSimulator/OUT.txt", "w") as f:
         f.write(output.strip())
 
-    
-#inp="bin.txt"
-#inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
+
+# inp="bin.txt"
+# inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
 inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
 with open(inp, "r") as f:
     l = f.readlines()
