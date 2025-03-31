@@ -228,6 +228,19 @@ def B_execute(opcode,imm,rs1,rs2,pc,f3):
             return pc+imm
         return pc+4
     
+
+
+def copytofile(pc):
+    string = ""
+    string += format(pc, '#034b')
+    for i in reg_values:
+        string += ' '
+        string += '0b' + i
+    string += '\n'
+    return string
+
+
+
 def run(l):
     l = [x.strip() for x in l]
     l = [x for x in l if x]
