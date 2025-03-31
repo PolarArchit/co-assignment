@@ -187,15 +187,39 @@ def J_execute(opcode, imm, rd, PC):
         return PC
     return reg_values[rd]
 
-def I_execute(imm, rs1 ,f3, rd,opcode):
-    if opcode_table[opcode][''][f3]=='addi':
-        imm = sign_extension(imm)
-        imm = sign_rep(imm)
-        reg_values[rd]=int(reg_values[rs1],2)+imm
-        reg_values[rd]=format(reg_values[rd] & 0xFFFFFFFF, '032b')
-    return reg_values[rd]
+def I_execute(imm, rs1 ,f3, rd,opcode,pc):
+    if opcode_table[opcode][''][f3] == 'addi':
+        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
+        reg_values[rd] = int(reg_values[rs1], 2) + imm
+        reg_values[rd] = format(reg_values[rd] & 0xFFFFFFFF, '032b')
+        return pc + 4
+    if opcode_table[opcode][''][f3] == 'jalr':
+        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
+        reg_values[rd] = format(pc + 4, '032b')  
+        pc = int(reg_values[rs1], 2) + imm
+        return pc
+    if opcode_table[opcode][''][f3]=='lw':
+        imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
+        reg_values[rd] = int(reg_values[rs1], 2) + imm
+        reg_values[rd] = format(reg_values[rd] & 0xFFFFFFFF, '032b')
+        return pc + 4
 
-
+def B_execute(opcode,imm,rs1,rs2,pc,f3):
+    imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(sign_extension(imm), 2) - (1 << 32)
+        
+    if opcode_table[opcode][''][f3]=='beq':
+        if reg_values[rs1]==reg_values[rs2]:
+            if imm==0:
+                return "HALT"
+            return pc+imm
+        return pc+4
+    if opcode_table[opcode][''][f3]=='bne':
+        if reg_values[rs1]!=reg_values[rs2]:
+            if imm==0:
+                return "HALT"
+            return pc+imm
+        return pc+4
+    
 def run(l):
     l = [x.strip() for x in l]
     l = [x for x in l if x]
@@ -211,6 +235,7 @@ def run(l):
         if opcode not in opcode_table:
             raise ValueError("UNKNOWN OPCODE")
         it=type_table[opcode]
+
         if it=='R':
             f7=line[:7]
             rs2=line[7:12]
@@ -231,9 +256,8 @@ def run(l):
             rd=line[20:25]
             assert checkI(opcode,f3)
             assert rs1 in registers
-            I_execute(imm, rs1 ,f3, rd,opcode)
-            # change in branching jalr it will not be +4
-            pc+=4 
+            pc=I_execute(imm, rs1 ,f3, rd,opcode,pc)
+
         elif it=='S':
             imm=line[:7]+line[20:25]
             rs2=line[7:12]
@@ -243,6 +267,7 @@ def run(l):
             assert rs1 in registers
             assert rs2 in registers
             pc+=4
+
         elif it=='B':
             imm=line[0]+line[24]+line[1:7]+line[20:24]
             rs2=line[7:12]
@@ -251,7 +276,10 @@ def run(l):
             assert checkB(opcode,f3)
             assert rs1 in registers
             assert rs2 in registers
-            pc+=4            # change in branching beq bne it will not be +4
+            pc=B_execute(opcode,imm,rs1,rs2,pc,f3)
+            if pc=="HALT":
+                print("HALT")
+                break
         elif it=='J':
             imm = line[0] + line[12:20] + line[11] + line[1:11]
             rd=line[20:25]
@@ -262,12 +290,14 @@ def run(l):
         else:
             raise ValueError("UNKNOWN OPCODE")
         print(it)
+        print(reg_values)
+        print("\n"*5)
 
 
     
 #inp="bin.txt"
-inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
-# inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
+#inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
+inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
 with open(inp, "r") as f:
     l = f.readlines()
 run(l)
