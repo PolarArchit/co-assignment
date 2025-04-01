@@ -404,16 +404,9 @@ def run(l,output_file):
 
 
 if __name__ == "__main__":
-    print("+"*100)
-    print(sys.argv)
     input_file = sys.argv[1]
     output_file = sys.argv[2]
     
-
-    print("ITS SIMMING TIME")
-    
-    print(input_file,"\n", output_file)
-
     with open(input_file, "r") as f:
         l = f.readlines()
     run(l,output_file)

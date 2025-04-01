@@ -201,7 +201,7 @@ def run(lines):
         try:
             operation, remaining = instruction.split(" ")
         except:
-            raise ValueError(f"{instruction}")
+            raise f"{instruction}"
         operation = operation.strip()
         remaining = remaining.strip()
 
@@ -300,11 +300,7 @@ def main(inp, out):
             f.write("\n")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        # print("Usage: python Assembler.py <input_file> <output_file>")
-        sys.exit(1)
     input_file = sys.argv[1]
     output_file = sys.argv[2]
-    print(input_file,"\n", output_file)
     main(input_file, output_file)
     

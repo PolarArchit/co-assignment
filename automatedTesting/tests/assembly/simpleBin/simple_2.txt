@@ -8,7 +8,7 @@ fib_loop:add a1,t0,t1
 addi t0,t1,0
 addi t1,a1,0
 addi t2,t2,1
-bne t2, a0, fib_loop
+bne t2,a0,fib_loop
 fib_done:addi a7,zero,93
 addi a0,zero,0
 fib_zero:addi a1,zero,0
