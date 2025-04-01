@@ -1,4 +1,4 @@
-# import sys
+import sys
 
 # print("Sim")
 
@@ -209,7 +209,7 @@ def R_execute(opcode, f7, rs2, rs1, f3, rd):
 
 
 def S_execute(opcode, imm, rs1, rs2, f3, PC):
-    if opcode_table[opcode][''] == 'sw':
+    if opcode_table[opcode][''][f3] == 'sw':
         imm = int(sign_extension(imm), 2) if imm[0] == '0' else int(
             sign_extension(imm), 2) - (1 << 32)
         address = int(reg_values[rs1], 2) + imm
@@ -220,10 +220,14 @@ def S_execute(opcode, imm, rs1, rs2, f3, PC):
 
 
 def J_execute(opcode, imm, rd, PC):
+    
+    imm=sign_extension(imm)
     if opcode_table[opcode][''] == 'jal':
-        imm = int(imm, 2)
-        if (imm >> 20) & 1:
-            imm = imm - (1 << 21)
+        if imm[0]=='1':
+            imm = int(imm, 2) - 1<<32
+        else:
+            imm=int(imm,2)
+        
         reg_values[rd] = format(PC + 4, '032b')
         PC = PC + imm
         return PC
@@ -293,7 +297,7 @@ def copytofile(pc):
     return string
 
 
-def run(l):
+def run(l,output_file):
     output = ""
 
     l = [x.strip() for x in l]
@@ -363,7 +367,7 @@ def run(l):
                 break
 
         elif it == 'J':
-            imm = line[0] + line[12:20] + line[11] + line[1:11]
+            imm = line[0] + line[12:20] + line[11] + line[1:11]+'0'
             rd = line[20:25]
             assert rd in registers
             assert checkJ(opcode)
@@ -372,11 +376,13 @@ def run(l):
         else:
             raise ValueError("UNKNOWN OPCODE")
 
+      
         output += f"0b{format(pc, '032b')} "
-
+        reg_values['00000']="0"*32
         for i in reg_values.keys():
             output += f"0b{reg_values[i]} "
         output += "\n"
+
 
         """
         print(it," : ",pc)
@@ -384,13 +390,35 @@ def run(l):
         print("-"*120)
         print("\n"*5)
         """
-    with open("SimpleSimulator/OUT.txt", "w") as f:
+
+        
+    for loc in range(65536, 65660 + 1, 4):
+        output += f"0x{f"{loc:08x}".upper()}:0b{format(mem_values["0x"+f"{loc:08x}".upper()], '032b')}\n"
+    with open(output_file, "w") as f:
         f.write(output.strip())
 
 
 # inp="bin.txt"
 # inp = r'C:\Users\Ashish Gupta\Desktop\co-midsem project\SimpleSimulator\bin.txt'
-inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
-with open(inp, "r") as f:
-    l = f.readlines()
-run(l)
+#inp = r'C:\Users\amrit\Documents\co\co-assignment\SimpleSimulator\bin.txt'
+
+
+if __name__ == "__main__":
+    print("+"*100)
+    print(sys.argv)
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
+    
+
+    print("ITS SIMMING TIME")
+    
+    print(input_file,"\n", output_file)
+
+    with open(input_file, "r") as f:
+        l = f.readlines()
+    run(l,output_file)
+
+
+
+
+
